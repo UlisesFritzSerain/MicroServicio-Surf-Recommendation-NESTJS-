@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, ParseIntPipe, ValidationPipe, UsePipes } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
+import {CreateFavoriteDto} from '../dto/create-favorite.dto';
 
 @Controller('favorites')
 export class FavoritesController {
@@ -10,6 +11,11 @@ export class FavoritesController {
     return this.favoritesService.findAll();
   }
 
+  @Get('recommendations') // recommendatios tiene que ir antes que :id para que no interprete como un id
+  async getRecommendations() {
+    return await this.favoritesService.getRecommendations();
+  }
+
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
     console.log('Buscando favorito con id:', id, typeof id);
@@ -17,9 +23,9 @@ export class FavoritesController {
   }
 
   @Post()
-  add(@Body('id') id: number) {
-    console.log(`Adding favorite movie with ID: ${id}`);
-    return this.favoritesService.create(id);
+  @UsePipes(new ValidationPipe())
+  add(@Body() CreateFavoriteDto: CreateFavoriteDto) {
+    return this.favoritesService.create(CreateFavoriteDto.id);
   }
 
   @Delete(':id')

@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { MoviesService } from 'src/movies/movies.service';
 
 @Injectable()
 export class FavoritesService {
   private favorites: number[] = [];
+
+  constructor(private readonly moviesService: MoviesService) {} // injectando MoviesService en FavoritesService para poder usarlo en getRecommendations
 
   findAll(): number[] {
     return this.favorites;
@@ -29,4 +32,21 @@ export class FavoritesService {
     this.favorites.splice(index, 1);
     console.log(this.favorites);
   }
+
+  async getRecommendations() {
+    const recommendations = new Set();
+  
+    for (const favId of this.favorites) {
+      const recs = await this.moviesService.getRecommendations(favId);
+      for (const movie of recs.results) {
+        // Filtrar por popularidad y que no esté en favoritos
+        if (movie.popularity < 20 && !this.favorites.includes(movie.id)) {
+          recommendations.add(movie);
+        }
+      }
+    }
+  
+    return Array.from(recommendations);
+  }
+  
 }

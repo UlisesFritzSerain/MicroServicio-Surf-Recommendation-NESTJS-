@@ -50,4 +50,22 @@ export class MoviesService {
       throw new HttpException('Error fetching movie details', HttpStatus.NOT_FOUND);
     }
   }
+
+  async getRecommendations(id: number) {
+    try {
+      const response = await axios.get(`${this.baseUrl}/movie/${id}/recommendations`, {
+        params: {
+          api_key: this.apiKey,
+          language: 'es-ES',
+          page: 1,
+        },
+      });
+      return response.data; // Retorna el objeto con lista de recomendaciones en .results
+    } catch (error) {
+      throw new HttpException(
+        `Error fetching recommendations for movie ID ${id}`,
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+  }
 }
